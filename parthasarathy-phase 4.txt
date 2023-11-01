@@ -1,0 +1,56 @@
+from flask import Flask, request, jsonify
+import requests
+
+app = Flask(__name__)
+
+PAGE_ACCESS_TOKEN = 'YOUR_FACEBOOK_PAGE_ACCESS_TOKEN'
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.get_json()
+    if data['object'] == 'page':
+        for entry in data['entry']:
+            for messaging_event in entry['messaging']:
+                sender_id = messaging_event['sender']['id']
+                message_text = messaging_event['message']['text']
+                # Call Watson Assistant API to get chatbot response based on message_text
+                # Send the chatbot response back to the user using send_message function
+    return "ok", 200
+
+def send_message(sender_id, message_text):
+    data = {
+        "recipient": {"id": sender_id},
+        "message": {"text": message_text}
+    }
+    requests.post("https://graph.facebook.com/v12.0/me/messages", params={"access_token": PAGE_ACCESS_TOKEN}, json=data)
+
+if __name__ == '__main__':
+    app.run(port=5000)
+from flask import Flask, request, jsonify
+import requests
+
+app = Flask(__name__)
+
+SLACK_BOT_TOKEN = 'YOUR_SLACK_BOT_TOKEN'
+
+@app.route('/slack/events', methods=['POST'])
+def slack_events():
+    data = request.get_json()
+    if 'challenge' in data:
+        return data['challenge']
+    if 'event' in data:
+        sender_id = data['event']['user']
+        message_text = data['event']['text']
+        # Call Watson Assistant API to get chatbot response based on message_text
+        # Send the chatbot response back to the user using send_message function
+    return "ok", 200
+
+def send_message(channel, message_text):
+    data = {
+        "channel": channel,
+        "text": message_text
+    }
+    requests.post("https://slack.com/api/chat.postMessage", headers={"Authorization": "Bearer " + SLACK_BOT_TOKEN}, json=data)
+
+if __name__ == '__main__':
+    app.run(port=5000)
